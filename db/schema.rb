@@ -10,9 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_01_000004) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_18_000004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  # Custom types defined in this database.
+  # Note that some types may not work with other database engines. Be careful if changing database.
+  create_enum "financial_transaction_type", ["income", "payment"]
+  create_enum "schedule_type", ["flexible", "fixed"]
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -40,6 +45,29 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_01_000004) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "financial_transactions", force: :cascade do |t|
+    t.enum "transaction_type", null: false, enum_type: "financial_transaction_type"
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.string "category"
+    t.string "description"
+    t.date "date", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category"], name: "index_financial_transactions_on_category"
+    t.index ["date"], name: "index_financial_transactions_on_date"
+    t.index ["transaction_type"], name: "index_financial_transactions_on_transaction_type"
+  end
+
+  create_table "gym_states", force: :cascade do |t|
+    t.decimal "balance", precision: 12, scale: 2, default: "0.0", null: false
+    t.integer "current_visitors", default: 0, null: false
+    t.boolean "open", default: false, null: false
+    t.datetime "recorded_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["recorded_at"], name: "index_gym_states_on_recorded_at"
   end
 
   create_table "user_oauths", force: :cascade do |t|
@@ -70,7 +98,30 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_01_000004) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "visitor_profiles", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.decimal "visits_per_week", precision: 3, scale: 1, null: false
+    t.enum "schedule_type", null: false, enum_type: "schedule_type"
+    t.boolean "has_own_shoes", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_visitor_profiles_on_user_id", unique: true
+  end
+
+  create_table "visits", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.datetime "checked_in_at", null: false
+    t.datetime "checked_out_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["checked_in_at"], name: "index_visits_on_checked_in_at"
+    t.index ["checked_out_at"], name: "index_visits_on_checked_out_at"
+    t.index ["user_id"], name: "index_visits_on_user_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "user_oauths", "users"
+  add_foreign_key "visitor_profiles", "users"
+  add_foreign_key "visits", "users"
 end

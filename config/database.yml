@@ -5,20 +5,20 @@ default: &default
 
 development:
   <<: *default
-  database: puhatak_dev
-  username: puhatak
+  database: climbing_gym_model_dev
+  username: climbing_gym_model
   password: password
   host: localhost
 
 test:
   <<: *default
-  database: puhatak_test
-  username: puhatak
+  database: climbing_gym_model_test
+  username: climbing_gym_model
   password: password
   host: localhost
 
 production:
   <<: *default
-  database: puhatak_production
-  username: puhatak
+  database: climbing_gym_model_production
+  username: climbing_gym_model
   password: <%= ENV["NALKA_DATABASE_PASSWORD"] %>

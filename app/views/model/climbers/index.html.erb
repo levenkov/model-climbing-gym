@@ -1,0 +1,77 @@
+<div class="max-w-4xl mx-auto p-8">
+  <h1 class="text-2xl font-bold mb-6">Climbers</h1>
+
+  <% if @total_count.zero? %>
+    <p class="text-gray-500">No climbers generated yet. Run <code class="bg-gray-100 px-2 py-1 rounded">bin/rails climbers:generate COUNT=100</code></p>
+  <% else %>
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-lg font-semibold mb-4">Visits per week distribution</h2>
+      <canvas id="visitsChart" height="100"></canvas>
+    </div>
+
+    <div class="grid grid-cols-3 gap-4">
+      <div class="bg-white rounded-lg shadow p-6 text-center">
+        <div class="text-3xl font-bold text-indigo-600"><%= @total_count %></div>
+        <div class="text-gray-500 mt-1">Total climbers</div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6 text-center">
+        <div class="text-3xl font-bold text-indigo-600"><%= @own_shoes_percent %>%</div>
+        <div class="text-gray-500 mt-1">Own climbing shoes</div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6 text-center">
+        <div class="text-3xl font-bold text-indigo-600"><%= @flexible_percent %>%</div>
+        <div class="text-gray-500 mt-1">Flexible schedule</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const values = <%= raw @visits_values.to_json %>;
+
+        // Build KDE (kernel density estimation) curve
+        const bandwidth = 0.3;
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const step = 0.1;
+        const points = [];
+
+        for (let x = min; x <= max; x += step) {
+          let density = 0;
+          for (const v of values) {
+            const z = (x - v) / bandwidth;
+            density += Math.exp(-0.5 * z * z) / (bandwidth * Math.sqrt(2 * Math.PI));
+          }
+          density /= values.length;
+          points.push({ x: Math.round(x * 10) / 10, y: density });
+        }
+
+        const ctx = document.getElementById('visitsChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: points.map(p => p.x),
+            datasets: [{
+              label: 'Density',
+              data: points.map(p => p.y),
+              borderColor: 'rgb(79, 70, 229)',
+              backgroundColor: 'rgba(79, 70, 229, 0.1)',
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0
+            }]
+          },
+          options: {
+            scales: {
+              x: { title: { display: true, text: 'Visits per week' } },
+              y: { title: { display: true, text: 'Density' }, beginAtZero: true }
+            },
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+      });
+    </script>
+  <% end %>
+</div>

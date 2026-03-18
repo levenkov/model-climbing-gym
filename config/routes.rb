@@ -26,6 +26,10 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :model do
+    resources :climbers, only: [:index]
+  end
+
   namespace :admin do
     resources :users, only: %i[index edit update destroy] do
       member do

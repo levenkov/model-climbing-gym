@@ -4,9 +4,9 @@ services:
     image: postgres:15-alpine
     restart: always
     environment:
-      POSTGRES_USER: puhatak
+      POSTGRES_USER: climbing_gym_model
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: puhatak_dev
+      POSTGRES_DB: climbing_gym_model_dev
     ports:
       - "5432:5432"
   redis:
