@@ -61,4 +61,4 @@ jobs:
 
       - name: Push Helm chart to GHCR
         run: |
-          helm push climbing_gym_model-backend-${{ steps.gitver.outputs.chart_version }}.tgz oci://ghcr.io/${{ github.repository }}/charts
+          helm push climbing-gym-model-backend-${{ steps.gitver.outputs.chart_version }}.tgz oci://ghcr.io/${{ github.repository }}/charts

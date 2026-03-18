@@ -2,11 +2,11 @@
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: {{ include "climbing_gym_model-backend.fullname" . }}-minio-stripprefix
+  name: {{ include "climbing-gym-model-backend.fullname" . }}-minio-stripprefix
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "climbing_gym_model-backend.name" . }}
-    helm.sh/chart: {{ include "climbing_gym_model-backend.chart" . }}
+    app.kubernetes.io/name: {{ include "climbing-gym-model-backend.name" . }}
+    helm.sh/chart: {{ include "climbing-gym-model-backend.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
@@ -17,11 +17,11 @@ spec:
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: {{ include "climbing_gym_model-backend.fullname" . }}-limit-body-size
+  name: {{ include "climbing-gym-model-backend.fullname" . }}-limit-body-size
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "climbing_gym_model-backend.name" . }}
-    helm.sh/chart: {{ include "climbing_gym_model-backend.chart" . }}
+    app.kubernetes.io/name: {{ include "climbing-gym-model-backend.name" . }}
+    helm.sh/chart: {{ include "climbing-gym-model-backend.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
