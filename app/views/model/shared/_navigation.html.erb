@@ -1,0 +1,13 @@
+<nav class="bg-white shadow mb-6">
+  <div class="max-w-5xl mx-auto px-8">
+    <div class="flex items-center h-14 gap-8">
+      <%= link_to 'Climbing Gym Model', model_home_index_path, class: 'text-lg font-bold text-indigo-600 hover:text-indigo-800 mr-4' %>
+
+      <div class="flex gap-6 text-sm">
+        <%= link_to 'Generator', model_generator_index_path, class: "#{request.path.start_with?('/model/generator') ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:text-gray-900'}" %>
+        <%= link_to 'Climbers', model_climbers_path, class: "#{request.path.start_with?('/model/climbers') ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:text-gray-900'}" %>
+        <%= link_to 'Balance', model_balance_index_path, class: "#{request.path.start_with?('/model/balance') || request.path.start_with?('/model/days') ? 'text-indigo-600 font-medium' : 'text-gray-600 hover:text-gray-900'}" %>
+      </div>
+    </div>
+  </div>
+</nav>

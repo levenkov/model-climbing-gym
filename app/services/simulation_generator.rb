@@ -38,13 +38,14 @@ class SimulationGenerator
     @profiles = VisitorProfile.includes(:user).to_a
   end
 
-  def call
+  def call(&on_progress)
     start = @params[:start_date]
     days = @params[:days]
 
     days.times do |day_offset|
       date = start + day_offset
       simulate_day(date)
+      on_progress&.call(day_offset + 1)
       print '.'
     end
 

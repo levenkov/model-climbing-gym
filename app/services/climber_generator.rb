@@ -19,8 +19,12 @@ class ClimberGenerator
     @params = DEFAULTS.merge(params)
   end
 
-  def call
-    @params[:count].times.map { generate_one }
+  def call(&on_progress)
+    @params[:count].times.map do |i|
+      user = generate_one
+      on_progress&.call(i + 1)
+      user
+    end
   end
 
   private

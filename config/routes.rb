@@ -27,9 +27,18 @@ Rails.application.routes.draw do
   end
 
   namespace :model do
+    resources :home, only: [:index]
     resources :climbers, only: [:index]
     resources :balance, only: [:index]
     resources :days, only: [:show]
+    resources :generator, only: [:index] do
+      collection do
+        post :generate_climbers
+        post :generate_simulation
+        get :progress
+        delete :reset
+      end
+    end
   end
 
   namespace :admin do
@@ -51,5 +60,5 @@ Rails.application.routes.draw do
 
   get 'up' => 'rails/health#show', as: :rails_health_check
 
-  root 'health#show'
+  root 'model/home#index'
 end
