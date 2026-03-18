@@ -1,0 +1,136 @@
+<div class="max-w-5xl mx-auto p-8">
+  <h1 class="text-2xl font-bold mb-6">Gym Balance</h1>
+
+  <% if @gym_states.empty? %>
+    <p class="text-gray-500">No simulation data yet. Run <code class="bg-gray-100 px-2 py-1 rounded">bin/rails simulation:generate DAYS=90</code></p>
+  <% else %>
+    <!-- Balance over time -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-lg font-semibold mb-4">Balance over time</h2>
+      <canvas id="balanceChart" height="80"></canvas>
+    </div>
+
+    <!-- Visitors over time -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-lg font-semibold mb-4">Peak visitors per day</h2>
+      <canvas id="visitorsChart" height="80"></canvas>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="bg-white rounded-lg shadow p-6 text-center">
+        <div class="text-3xl font-bold text-green-600"><%= number_with_delimiter(@total_income.to_i) %></div>
+        <div class="text-gray-500 mt-1">Total income</div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6 text-center">
+        <div class="text-3xl font-bold text-red-600"><%= number_with_delimiter(@total_expenses.to_i) %></div>
+        <div class="text-gray-500 mt-1">Total expenses</div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6 text-center">
+        <% net = @total_income - @total_expenses %>
+        <div class="text-3xl font-bold <%= net >= 0 ? 'text-green-600' : 'text-red-600' %>"><%= number_with_delimiter(net.to_i) %></div>
+        <div class="text-gray-500 mt-1">Net profit</div>
+      </div>
+    </div>
+
+    <!-- Breakdown -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-3">Income breakdown</h3>
+        <table class="w-full text-sm">
+          <% @income_by_category.sort_by { |_, v| -v }.each do |category, amount| %>
+            <tr class="border-b">
+              <td class="py-2"><%= category.humanize %></td>
+              <td class="py-2 text-right font-mono text-green-600"><%= number_with_delimiter(amount.to_i) %></td>
+            </tr>
+          <% end %>
+        </table>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-3">Expenses breakdown</h3>
+        <table class="w-full text-sm">
+          <% @expenses_by_category.sort_by { |_, v| -v }.each do |category, amount| %>
+            <tr class="border-b">
+              <td class="py-2"><%= category.humanize %></td>
+              <td class="py-2 text-right font-mono text-red-600"><%= number_with_delimiter(amount.to_i) %></td>
+            </tr>
+          <% end %>
+        </table>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const dates = <%= raw @gym_states.map { |s| s.recorded_at.to_date.to_s }.to_json %>;
+        const balances = <%= raw @gym_states.map { |s| s.balance.to_f }.to_json %>;
+        const visitors = <%= raw @gym_states.map { |s| s.current_visitors }.to_json %>;
+
+        function navigateToDay(chart) {
+          chart.canvas.style.cursor = 'pointer';
+          chart.canvas.addEventListener('click', function(e) {
+            const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
+            if (points.length) {
+              const date = dates[points[0].index];
+              window.location.href = '/model/days/' + date;
+            }
+          });
+        }
+
+        // Balance chart
+        const balanceChart = new Chart(document.getElementById('balanceChart').getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: dates,
+            datasets: [{
+              label: 'Balance',
+              data: balances,
+              borderColor: balances.map(b => b >= 0 ? 'rgb(22, 163, 74)' : 'rgb(220, 38, 38)'),
+              backgroundColor: 'rgba(79, 70, 229, 0.05)',
+              fill: true,
+              tension: 0.3,
+              pointRadius: 2,
+              segment: {
+                borderColor: function(ctx) {
+                  return ctx.p1.parsed.y < 0 ? 'rgb(220, 38, 38)' : 'rgb(22, 163, 74)';
+                }
+              }
+            }]
+          },
+          options: {
+            scales: {
+              x: { title: { display: true, text: 'Date' } },
+              y: { title: { display: true, text: 'Balance' } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+        navigateToDay(balanceChart);
+
+        // Visitors chart
+        const visitorsChart = new Chart(document.getElementById('visitorsChart').getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: dates,
+            datasets: [{
+              label: 'Visitors',
+              data: visitors,
+              backgroundColor: 'rgba(79, 70, 229, 0.6)',
+              borderColor: 'rgb(79, 70, 229)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              x: { title: { display: true, text: 'Date' } },
+              y: { title: { display: true, text: 'Visitors at peak (19:00)' }, beginAtZero: true }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+        navigateToDay(visitorsChart);
+      });
+    </script>
+  <% end %>
+</div>

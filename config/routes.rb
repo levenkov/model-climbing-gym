@@ -28,6 +28,8 @@ Rails.application.routes.draw do
 
   namespace :model do
     resources :climbers, only: [:index]
+    resources :balance, only: [:index]
+    resources :days, only: [:show]
   end
 
   namespace :admin do
