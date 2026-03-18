@@ -5,7 +5,7 @@
       <h1 class="text-2xl font-bold"><%= @simulation.name %></h1>
       <p class="text-sm text-gray-500">Created <%= @simulation.created_at.strftime('%b %d, %Y %H:%M') %></p>
     </div>
-    <%= link_to 'Delete', model_simulation_path(@simulation), data: { turbo_method: :delete, turbo_confirm: 'Delete this simulation and all its data?' }, class: 'text-sm text-red-500 hover:text-red-700' %>
+    <%= link_to 'Delete', simulation_path(@simulation), data: { turbo_method: :delete, turbo_confirm: 'Delete this simulation and all its data?' }, class: 'text-sm text-red-500 hover:text-red-700' %>
   </div>
 
   <% if flash[:notice] %>
@@ -29,9 +29,9 @@
     </div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener('turbo:load', function() {
         const interval = setInterval(function() {
-          fetch('<%= progress_model_simulation_path(@simulation) %>')
+          fetch('<%= progress_simulation_path(@simulation) %>')
             .then(r => r.json())
             .then(data => {
               const pct = data.total > 0 ? Math.round(data.current / data.total * 100) : 0;
@@ -62,10 +62,10 @@
         </div>
         <div class="flex gap-3">
           <% if @climber_count > 0 %>
-            <%= link_to 'View', model_simulation_climbers_path(@simulation), class: 'bg-gray-100 text-gray-700 rounded-md py-2 px-4 text-sm font-medium hover:bg-gray-200' %>
+            <%= link_to 'View', simulation_climbers_path(@simulation), class: 'bg-gray-100 text-gray-700 rounded-md py-2 px-4 text-sm font-medium hover:bg-gray-200' %>
           <% end %>
           <% if @simulation.pending? || @simulation.failed? %>
-            <%= link_to 'Generate climbers', generate_climbers_model_simulation_path(@simulation), data: { turbo_method: :post }, class: 'bg-indigo-600 text-white rounded-md py-2 px-4 text-sm font-medium hover:bg-indigo-700' %>
+            <%= link_to 'Generate climbers', generate_climbers_simulation_path(@simulation), data: { turbo_method: :post }, class: 'bg-indigo-600 text-white rounded-md py-2 px-4 text-sm font-medium hover:bg-indigo-700' %>
           <% end %>
         </div>
       </div>
@@ -86,11 +86,11 @@
         </div>
         <div class="flex gap-3">
           <% if @simulation_days > 0 %>
-            <%= link_to 'View balance', model_simulation_balance_index_path(@simulation), class: 'bg-gray-100 text-gray-700 rounded-md py-2 px-4 text-sm font-medium hover:bg-gray-200' %>
-            <%= link_to 'Reset simulation', reset_simulation_model_simulation_path(@simulation), data: { turbo_method: :delete, turbo_confirm: 'Reset simulation data? Climbers will be preserved.' }, class: 'text-sm text-red-500 hover:text-red-700 py-2 px-4' %>
+            <%= link_to 'View balance', simulation_balance_index_path(@simulation), class: 'bg-gray-100 text-gray-700 rounded-md py-2 px-4 text-sm font-medium hover:bg-gray-200' %>
+            <%= link_to 'Reset simulation', reset_simulation_simulation_path(@simulation), data: { turbo_method: :delete, turbo_confirm: 'Reset simulation data? Climbers will be preserved.' }, class: 'text-sm text-red-500 hover:text-red-700 py-2 px-4' %>
           <% end %>
           <% if @simulation.climbers_ready? || @simulation.failed? %>
-            <%= link_to 'Run simulation', run_simulation_model_simulation_path(@simulation), data: { turbo_method: :post }, class: 'bg-indigo-600 text-white rounded-md py-2 px-4 text-sm font-medium hover:bg-indigo-700' %>
+            <%= link_to 'Run simulation', run_simulation_simulation_path(@simulation), data: { turbo_method: :post }, class: 'bg-indigo-600 text-white rounded-md py-2 px-4 text-sm font-medium hover:bg-indigo-700' %>
           <% end %>
         </div>
       </div>

@@ -60,10 +60,8 @@
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener('turbo:load', function() {
         const dates = <%= raw @gym_states.map { |s| s.recorded_at.to_date.to_s }.to_json %>;
         const balances = <%= raw @gym_states.map { |s| s.balance.to_f }.to_json %>;
         const visitors = <%= raw @gym_states.map { |s| s.current_visitors }.to_json %>;
@@ -74,7 +72,7 @@
             const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
             if (points.length) {
               const date = dates[points[0].index];
-              window.location.href = '/model/simulations/<%= @simulation.id %>/days/' + date;
+              window.location.href = '/simulations/<%= @simulation.id %>/days/' + date;
             }
           });
         }

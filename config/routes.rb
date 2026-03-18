@@ -26,9 +26,8 @@ Rails.application.routes.draw do
     end
   end
 
-  namespace :model do
-    resources :home, only: [:index]
-    resources :simulations, only: %i[show new create destroy] do
+  scope module: :model do
+    resources :simulations, only: %i[index show new create destroy] do
       member do
         get :progress
         post :generate_climbers
@@ -60,5 +59,5 @@ Rails.application.routes.draw do
 
   get 'up' => 'rails/health#show', as: :rails_health_check
 
-  root 'model/home#index'
+  root 'model/simulations#index'
 end

@@ -1,5 +1,9 @@
 module Model
   class SimulationsController < BaseController
+    def index
+      @simulations = current_user.simulations.order(created_at: :desc)
+    end
+
     def show
       @simulation = current_user.simulations.find(params[:id])
       @climber_count = @simulation.visitor_profiles.count
@@ -37,7 +41,7 @@ module Model
       )
 
       if @simulation.save
-        redirect_to model_simulation_path(@simulation)
+        redirect_to simulation_path(@simulation)
       else
         render :new, status: :unprocessable_entity
       end
@@ -46,13 +50,13 @@ module Model
     def generate_climbers
       simulation = current_user.simulations.find(params[:id])
       ClimberGenerationJob.perform_later(simulation.id)
-      redirect_to model_simulation_path(simulation)
+      redirect_to simulation_path(simulation)
     end
 
     def run_simulation
       simulation = current_user.simulations.find(params[:id])
       SimulationRunJob.perform_later(simulation.id)
-      redirect_to model_simulation_path(simulation)
+      redirect_to simulation_path(simulation)
     end
 
     def reset_simulation
@@ -61,7 +65,7 @@ module Model
       simulation.financial_transactions.delete_all
       simulation.gym_states.delete_all
       simulation.update!(status: :climbers_ready, progress_current: 0, progress_total: 0)
-      redirect_to model_simulation_path(simulation), notice: 'Simulation data reset. Climbers preserved.'
+      redirect_to simulation_path(simulation), notice: 'Simulation data reset. Climbers preserved.'
     end
 
     def progress
@@ -76,7 +80,7 @@ module Model
     def destroy
       simulation = current_user.simulations.find(params[:id])
       simulation.destroy!
-      redirect_to model_home_index_path, notice: 'Simulation deleted.'
+      redirect_to root_path, notice: 'Simulation deleted.'
     end
 
     private
