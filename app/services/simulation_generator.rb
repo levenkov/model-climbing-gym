@@ -32,14 +32,15 @@ class SimulationGenerator
 
   EXPENSE_CATEGORIES = %i[rent electricity water other_bills staff_salaries].freeze
 
-  def initialize(**params)
+  def initialize(simulation:, **params)
+    @simulation = simulation
     @params = DEFAULTS.merge(params)
     @balance = @params[:initial_balance].to_f
-    @profiles = VisitorProfile.includes(:user).to_a
+    @profiles = @simulation.visitor_profiles.includes(:user).to_a
   end
 
   def call(&on_progress)
-    start = @params[:start_date]
+    start = @params[:start_date].is_a?(Date) ? @params[:start_date] : Date.parse(@params[:start_date].to_s)
     days = @params[:days]
 
     days.times do |day_offset|
@@ -55,7 +56,6 @@ class SimulationGenerator
   private
 
   def simulate_day(date)
-    # Pay monthly expenses on the 1st
     if date.day == 1
       pay_monthly_expenses(date)
     end
@@ -67,12 +67,12 @@ class SimulationGenerator
       duration = random_duration
       check_out_time = check_in_time + duration.hours
 
-      # Cap at closing time
       closing = date.to_time.change(hour: @params[:close_hour])
       check_out_time = closing if check_out_time > closing
 
-      visit = Visit.create!(
+      Visit.create!(
         user: profile.user,
+        simulation: @simulation,
         checked_in_at: check_in_time,
         checked_out_at: check_out_time
       )
@@ -80,13 +80,11 @@ class SimulationGenerator
       record_visit_income(date, profile)
     end
 
-    # Record end-of-day gym state
     record_gym_state(date)
   end
 
   def select_visitors_for_day(date)
     @profiles.select do |profile|
-      # visits_per_week probability: e.g. 3.0 visits/week = 3.0/7 daily probability
       daily_probability = profile.visits_per_week.to_f / 7.0
       rand < daily_probability
     end
@@ -113,9 +111,9 @@ class SimulationGenerator
   end
 
   def record_visit_income(date, profile)
-    # Visit fee
     @balance += @params[:visit_fee]
     FinancialTransaction.create!(
+      simulation: @simulation,
       transaction_type: :income,
       amount: @params[:visit_fee],
       category: 'visit_fee',
@@ -123,10 +121,10 @@ class SimulationGenerator
       date: date
     )
 
-    # Shoe rental for those without own shoes
     unless profile.has_own_shoes
       @balance += @params[:shoe_rental_fee]
       FinancialTransaction.create!(
+        simulation: @simulation,
         transaction_type: :income,
         amount: @params[:shoe_rental_fee],
         category: 'shoe_rental',
@@ -143,6 +141,7 @@ class SimulationGenerator
 
       @balance -= amount
       FinancialTransaction.create!(
+        simulation: @simulation,
         transaction_type: :payment,
         amount: amount,
         category: category.to_s,
@@ -153,11 +152,12 @@ class SimulationGenerator
   end
 
   def record_gym_state(date)
-    # Count visitors present at peak hour (19:00)
     peak_time = date.to_time.change(hour: 19)
-    current_visitors = Visit.where('checked_in_at <= ? AND checked_out_at >= ?', peak_time, peak_time).count
+    current_visitors = @simulation.visits
+      .where('checked_in_at <= ? AND checked_out_at >= ?', peak_time, peak_time).count
 
     GymState.create!(
+      simulation: @simulation,
       balance: @balance,
       current_visitors: current_visitors,
       open: true,

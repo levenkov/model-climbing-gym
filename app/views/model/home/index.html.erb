@@ -1,34 +1,36 @@
 <%= render 'model/shared/navigation' %>
 <div class="max-w-5xl mx-auto p-8">
-  <h1 class="text-3xl font-bold mb-2">Climbing Gym Financial Model</h1>
-  <p class="text-gray-500 mb-8">Simulate climbing gym operations, track revenue, expenses, and visitor patterns.</p>
-
-  <div class="grid grid-cols-2 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold">Climbers</h2>
-        <span class="text-2xl font-bold text-indigo-600"><%= @climber_count %></span>
-      </div>
-      <p class="text-sm text-gray-500 mb-4">Generated visitor profiles with visit frequency, schedule type, and shoe ownership.</p>
-      <%= link_to 'View distribution', model_climbers_path, class: 'text-sm text-indigo-600 hover:text-indigo-800 font-medium' %>
-    </div>
-
-    <div class="bg-white rounded-lg shadow p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold">Simulation</h2>
-        <span class="text-2xl font-bold text-indigo-600"><%= @simulation_days %> days</span>
-      </div>
-      <p class="text-sm text-gray-500 mb-4"><%= @visit_count %> visits, <%= @transaction_count %> transactions recorded.</p>
-      <%= link_to 'View balance', model_balance_index_path, class: 'text-sm text-indigo-600 hover:text-indigo-800 font-medium' %>
-    </div>
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">My simulations</h1>
+    <%= link_to 'New simulation', new_model_simulation_path, class: 'bg-indigo-600 text-white rounded-md py-2 px-4 text-sm font-medium hover:bg-indigo-700' %>
   </div>
 
-  <div class="bg-white rounded-lg shadow p-6">
-    <h2 class="text-lg font-semibold mb-4">Getting started</h2>
-    <ol class="list-decimal list-inside space-y-2 text-sm text-gray-700">
-      <li><%= link_to 'Generate climbers', model_generator_index_path, class: 'text-indigo-600 hover:text-indigo-800 font-medium' %> &mdash; create visitor profiles with configurable distributions</li>
-      <li><%= link_to 'Run simulation', model_generator_index_path, class: 'text-indigo-600 hover:text-indigo-800 font-medium' %> &mdash; simulate daily visits, revenue, and expenses</li>
-      <li><%= link_to 'Analyze balance', model_balance_index_path, class: 'text-indigo-600 hover:text-indigo-800 font-medium' %> &mdash; view charts, click any day for details</li>
-    </ol>
-  </div>
+  <% if @simulations.empty? %>
+    <div class="bg-white rounded-lg shadow p-8 text-center">
+      <p class="text-gray-500 mb-4">No simulations yet. Create one to get started.</p>
+      <%= link_to 'Create simulation', new_model_simulation_path, class: 'text-indigo-600 hover:text-indigo-800 font-medium' %>
+    </div>
+  <% else %>
+    <div class="space-y-4">
+      <% @simulations.each do |simulation| %>
+        <div class="bg-white rounded-lg shadow p-6 flex items-center justify-between">
+          <div>
+            <%= link_to simulation.name, model_simulation_path(simulation), class: 'text-lg font-semibold text-indigo-600 hover:text-indigo-800' %>
+            <div class="text-sm text-gray-500 mt-1">
+              <% if simulation.completed? %>
+                <%= simulation.visitor_profiles.count %> climbers, <%= simulation.gym_states.count %> days
+              <% else %>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                  <%= simulation.failed? ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' %>">
+                  <%= simulation.status.humanize %>
+                </span>
+              <% end %>
+              &middot; <%= simulation.created_at.strftime('%b %d, %Y %H:%M') %>
+            </div>
+          </div>
+          <%= link_to 'Delete', model_simulation_path(simulation), data: { turbo_method: :delete, turbo_confirm: 'Delete this simulation and all its data?' }, class: 'text-sm text-red-500 hover:text-red-700' %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </div>

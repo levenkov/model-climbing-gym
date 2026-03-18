@@ -28,16 +28,16 @@ Rails.application.routes.draw do
 
   namespace :model do
     resources :home, only: [:index]
-    resources :climbers, only: [:index]
-    resources :balance, only: [:index]
-    resources :days, only: [:show]
-    resources :generator, only: [:index] do
-      collection do
-        post :generate_climbers
-        post :generate_simulation
+    resources :simulations, only: %i[show new create destroy] do
+      member do
         get :progress
-        delete :reset
+        post :generate_climbers
+        post :run_simulation
+        delete :reset_simulation
       end
+      resources :climbers, only: [:index]
+      resources :balance, only: [:index]
+      resources :days, only: [:show]
     end
   end
 

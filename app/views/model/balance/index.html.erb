@@ -3,7 +3,7 @@
   <h1 class="text-2xl font-bold mb-6">Gym Balance</h1>
 
   <% if @gym_states.empty? %>
-    <p class="text-gray-500">No simulation data yet. Run <code class="bg-gray-100 px-2 py-1 rounded">bin/rails simulation:generate DAYS=90</code></p>
+    <p class="text-gray-500">No simulation data yet.</p>
   <% else %>
     <!-- Balance over time -->
     <div class="bg-white rounded-lg shadow p-6 mb-6">
@@ -74,7 +74,7 @@
             const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
             if (points.length) {
               const date = dates[points[0].index];
-              window.location.href = '/model/days/' + date;
+              window.location.href = '/model/simulations/<%= @simulation.id %>/days/' + date;
             }
           });
         }

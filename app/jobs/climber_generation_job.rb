@@ -1,24 +1,18 @@
 class ClimberGenerationJob < ApplicationJob
-  def perform(params)
-    generator = ClimberGenerator.new(**params.symbolize_keys)
-    total = params['count'] || params[:count]
+  def perform(simulation_id)
+    simulation = Simulation.find(simulation_id)
+    params = simulation.climber_params.symbolize_keys
+    total = params[:count].to_i
 
-    update_progress(0, total, 'running')
+    simulation.update!(status: :generating_climbers, progress_current: 0, progress_total: total)
 
-    generator.call do |completed|
-      update_progress(completed, total, 'running')
+    ClimberGenerator.new(simulation: simulation, **params).call do |completed|
+      simulation.update_columns(progress_current: completed)
     end
 
-    update_progress(total, total, 'completed')
-  end
-
-  private
-
-  def update_progress(completed, total, status)
-    Rails.cache.write('climber_generation_progress', {
-      completed: completed,
-      total: total,
-      status: status
-    }, expires_in: 1.hour)
+    simulation.update!(status: :climbers_ready, progress_current: total)
+  rescue => e
+    simulation&.update(status: :failed) if simulation
+    raise
   end
 end

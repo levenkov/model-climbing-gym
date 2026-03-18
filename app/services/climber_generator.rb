@@ -15,7 +15,8 @@ class ClimberGenerator
     own_shoes_ratio: 0.3
   }.freeze
 
-  def initialize(**params)
+  def initialize(simulation:, **params)
+    @simulation = simulation
     @params = DEFAULTS.merge(params)
   end
 
@@ -37,6 +38,7 @@ class ClimberGenerator
     )
 
     user.create_visitor_profile!(
+      simulation: @simulation,
       visits_per_week: random_visits_per_week,
       schedule_type: random_schedule_type,
       has_own_shoes: rand < @params[:own_shoes_ratio]

@@ -1,12 +1,7 @@
 module Model
-  class HomeController < ApplicationController
-    skip_after_action :verify_authorized, raise: false
-
+  class HomeController < BaseController
     def index
-      @climber_count = VisitorProfile.count
-      @visit_count = Visit.count
-      @transaction_count = FinancialTransaction.count
-      @simulation_days = GymState.count
+      @simulations = current_user.simulations.order(created_at: :desc)
     end
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_18_000004) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_18_000006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -18,6 +18,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_18_000004) do
   # Note that some types may not work with other database engines. Be careful if changing database.
   create_enum "financial_transaction_type", ["income", "payment"]
   create_enum "schedule_type", ["flexible", "fixed"]
+  create_enum "simulation_status", ["pending", "generating_climbers", "climbers_ready", "simulating", "completed", "failed"]
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -55,8 +56,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_18_000004) do
     t.date "date", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "simulation_id"
     t.index ["category"], name: "index_financial_transactions_on_category"
     t.index ["date"], name: "index_financial_transactions_on_date"
+    t.index ["simulation_id"], name: "index_financial_transactions_on_simulation_id"
     t.index ["transaction_type"], name: "index_financial_transactions_on_transaction_type"
   end
 
@@ -67,7 +70,22 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_18_000004) do
     t.datetime "recorded_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "simulation_id"
     t.index ["recorded_at"], name: "index_gym_states_on_recorded_at"
+    t.index ["simulation_id"], name: "index_gym_states_on_simulation_id"
+  end
+
+  create_table "simulations", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.enum "status", default: "pending", null: false, enum_type: "simulation_status"
+    t.jsonb "climber_params", default: {}, null: false
+    t.jsonb "simulation_params", default: {}, null: false
+    t.integer "progress_current", default: 0
+    t.integer "progress_total", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_simulations_on_user_id"
   end
 
   create_table "user_oauths", force: :cascade do |t|
@@ -105,6 +123,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_18_000004) do
     t.boolean "has_own_shoes", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "simulation_id"
+    t.index ["simulation_id"], name: "index_visitor_profiles_on_simulation_id"
     t.index ["user_id"], name: "index_visitor_profiles_on_user_id", unique: true
   end
 
@@ -114,14 +134,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_18_000004) do
     t.datetime "checked_out_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "simulation_id"
     t.index ["checked_in_at"], name: "index_visits_on_checked_in_at"
     t.index ["checked_out_at"], name: "index_visits_on_checked_out_at"
+    t.index ["simulation_id"], name: "index_visits_on_simulation_id"
     t.index ["user_id"], name: "index_visits_on_user_id"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "financial_transactions", "simulations"
+  add_foreign_key "gym_states", "simulations"
+  add_foreign_key "simulations", "users"
   add_foreign_key "user_oauths", "users"
+  add_foreign_key "visitor_profiles", "simulations"
   add_foreign_key "visitor_profiles", "users"
+  add_foreign_key "visits", "simulations"
   add_foreign_key "visits", "users"
 end

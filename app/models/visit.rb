@@ -1,5 +1,6 @@
 class Visit < ApplicationRecord
   belongs_to :user
+  belongs_to :simulation, optional: true
 
   validates :checked_in_at, presence: true
   validate :checked_out_at_after_checked_in_at
