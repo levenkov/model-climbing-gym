@@ -34,9 +34,9 @@ Rails.application.routes.draw do
         post :run_simulation
         delete :reset_simulation
       end
-      resources :climbers, only: [:index]
-      resources :balance, only: [:index]
-      resources :days, only: [:show]
+      resources :climbers, only: [ :index ]
+      resources :balance, only: [ :index ]
+      resources :days, only: [ :show ]
     end
   end
 

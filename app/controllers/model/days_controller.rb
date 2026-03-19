@@ -12,7 +12,7 @@ module Model
       @hourly_presence = (0..23).map do |hour|
         time = @date.to_time.change(hour: hour, min: 30)
         count = @visits.count { |v| v.checked_in_at <= time && (v.checked_out_at.nil? || v.checked_out_at >= time) }
-        [hour, count]
+        [ hour, count ]
       end
 
       transactions = @simulation.financial_transactions.where(date: @date)

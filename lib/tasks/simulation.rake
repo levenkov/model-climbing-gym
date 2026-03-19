@@ -78,6 +78,8 @@ namespace :simulation do
     SimulationGenerator.new(simulation: simulation, **simulation.simulation_params.symbolize_keys).call
 
     simulation.update!(status: :completed)
-    puts "Done. #{simulation.visits.count} visits, #{simulation.financial_transactions.count} transactions, #{simulation.gym_states.count} days."
+    puts "Done. #{simulation.visits.count} visits, " \
+         "#{simulation.financial_transactions.count} transactions, " \
+         "#{simulation.gym_states.count} days."
   end
 end

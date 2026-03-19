@@ -11,7 +11,7 @@ class Visit < ApplicationRecord
     return if checked_out_at.blank?
 
     if checked_out_at <= checked_in_at
-      errors.add(:checked_out_at, "must be after check-in time")
+      errors.add(:checked_out_at, 'must be after check-in time')
     end
   end
 end
